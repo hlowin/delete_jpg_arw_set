@@ -6,7 +6,7 @@ import shutil
 import cv2
 
 def delete_jpg_arw_set(dirpath):
-
+  # fix directory path
   dirpath = dirpath.replace('\\', '/')
 
   # get files name as list
@@ -24,7 +24,11 @@ def delete_jpg_arw_set(dirpath):
   delete_dirpath = dirpath + "/[DELETE]"
   os.makedirs(delete_dirpath, exist_ok=True)
 
+  # initialize index
   index = 0
+
+  # calculate max index
+  jpg_file_list_size = len(jpg_file_list)
   while True:
     jpeg_filepath = dirpath + "/" + jpg_file_list[index]
     
@@ -41,21 +45,31 @@ def delete_jpg_arw_set(dirpath):
     # wait any key
     key = cv2.waitKey(0)
 
-    # debug
-    # print(key)
-
+    # operation process
     if key == 46:       # next image by ">" key
       index = index + 1
     if key == 44:       # prev image by "<" key
       index = index - 1
     if key == 100:      # delete file by "d" key
+      # move jpeg and arw files
       arw_filepath = jpeg_filepath.upper().replace(".JPG", ".ARW")
       shutil.move(jpeg_filepath, delete_dirpath)
       shutil.move(arw_filepath, delete_dirpath)
-      index = index + 1
+      print("[INFO] delete " + jpg_file_list.pop(index))
+
+      # update file list size
+      jpg_file_list_size = len(jpg_file_list)
     elif key == 27:     # quit by "esc" key
       break
+
+    # guard index for min/max
+    index = max(0, min(index, jpg_file_list_size - 1))
   
+    # guard for delete all files
+    if jpg_file_list_size == 0:
+      print("[ERROR] cannot find any jpeg files")
+      return
+
   return
 
 if __name__ == "__main__":
